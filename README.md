@@ -47,23 +47,5 @@ Once its is running, you can access the following components from the webaddress
     * Minio: http://localhost:9000
     * Flask Restful ETL Server: http://localhost:8060
     * Nginx Reverse Proxy Server: http://localhost:80
-
-
-## Built With
-This project has been devloped and tested on 2 Docker environments
-* [WSL](https://docs.microsoft.com/en-us/windows/wsl/about)
-* [Docker Toolbox](https://docs.docker.com/toolbox/toolbox_install_windows/). 
-* IDE - Visual Studio Code: Main reason being the [Container Debugger Feature](https://code.visualstudio.com/docs/remote/containers#_debugging-in-a-container) 
-
-
-## Contributing
-
-All code contributions must go through a pull request and approved by a core developer before being merged. This is to ensure proper review of all the code.
-
-## License
-
-This repository is available under the [BSD 3-Clause License](./LICENSE).
-
-## Authors
-
-* **Saeed Rahman** - [LinkedIn](https://www.linkedin.com/in/saeed-349/)
+    * ClickHouse: ToDo
+    * 

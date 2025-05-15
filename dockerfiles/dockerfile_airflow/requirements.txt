@@ -3,10 +3,10 @@ oandapyV20
 xlrd
 backtrader
 v20
-mlflow==1.4.0
+mlflow
 minio
 boto3
-sklearn
+scikit-learn
 twilio
 slackclient
 alpaca_trade_api
@@ -14,3 +14,6 @@ flask-bcrypt
 apache-airflow[celery]
 kiteconnect
 dropbox
+fireducks
+nautilus_trader
+ta-lib
