@@ -1,5 +1,5 @@
 psycopg2-binary
-mlflow
+mlflow==1.7.2
 xgboost
 boto3
 oandapyV20
@@ -7,7 +7,7 @@ backtrader
 v20
 pyfolio
 minio
-jupyterlab
+jupyterlab==1.2.7
 plotly
 ipywidgets
 npm
@@ -27,3 +27,4 @@ dropbox
 selenium
 fireducks
 nautilus_trader
+ta-lib
