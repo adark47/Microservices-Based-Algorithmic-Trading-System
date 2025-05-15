@@ -4,13 +4,22 @@ FROM jupyter/scipy-notebook
 
 USER root
 
+RUN apt install gcc
+
+RUN wget https://github.com/ta-lib/ta-lib/releases/download/v0.6.4/ta-lib-0.6.4-src.tar.gz \
+    tar -xzf ta-lib-0.6.4-src.tar.gz \
+    cd ta-lib-0.6.4/ \
+    ./configure --prefix=/usr \
+    make \
+    sudo make install \
+
 COPY requirements.txt /tmp/
 RUN pip install --requirement /tmp/requirements.txt && \
     fix-permissions $CONDA_DIR && \
     fix-permissions /home/$NB_USER && \
     apt update && \
     apt-get install curl -y && \
-#    export NODE_OPTIONS=--max-old-space-size=4096 &&\
+    export NODE_OPTIONS=--max-old-space-size=4096 &&\
 #    jupyter labextension install @jupyter-widgets/jupyterlab-manager --no-build &&\
 #    jupyter labextension install jupyterlab-plotly --no-build &&\
 #    jupyter labextension install plotlywidget --no-build &&\
