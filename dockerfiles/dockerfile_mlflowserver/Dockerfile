@@ -1,7 +1,8 @@
-# FROM python:3.7
-FROM continuumio/miniconda
+#FROM python:3.7
+FROM python:3.13
+#FROM continuumio/miniconda
 
-MAINTAINER Wilder Rodrigues (wilder.rodrigues@ekholabs.ai)
+#MAINTAINER Wilder Rodrigues (wilder.rodrigues@ekholabs.ai)
 
 COPY requirements.txt /tmp/
 RUN pip install --requirement /tmp/requirements.txt

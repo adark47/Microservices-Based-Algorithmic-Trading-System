@@ -131,7 +131,7 @@ services:
 
 
     airflow:
-        image: airflow
+        image: apache/airflow:latest
         container_name: "airflow"
         build:
             context: ./dockerfiles/dockerfile_airflow
@@ -162,7 +162,7 @@ services:
 
 
     flower:
-        image: airflow
+        image: apache/airflow:latest
         restart: always
         depends_on:
             - redis
@@ -177,7 +177,7 @@ services:
 
 
     scheduler:
-        image: airflow
+        image: apache/airflow:latest
         restart: always
         depends_on:
             - airflow
@@ -193,7 +193,7 @@ services:
 
 
     worker:
-        image: airflow
+        image: apache/airflow:latest
         restart: always
         depends_on:
             - scheduler

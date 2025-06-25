@@ -1,4 +1,9 @@
-FROM puckel/docker-airflow
+FROM apache/airflow:latest
+# apache/airflow:latest - the latest released Airflow image with default Python version (3.12 currently)
+# apache/airflow:latest-pythonX.Y - the latest released Airflow image with specific Python version
+# apache/airflow:3.1.0 - the versioned Airflow image with default Python version (3.12 currently)
+# apache/airflow:3.1.0-pythonX.Y - the versioned Airflow image with specific Python version
+
 USER root
 #COPY requirements.txt /requirements.txt
 COPY requirements.txt /tmp/requirements.txt
