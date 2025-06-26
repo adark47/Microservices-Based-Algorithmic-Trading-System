@@ -25,3 +25,11 @@ kiteconnect
 fireducks
 nautilus_trader
 ta
+
+nautilus_trader
+numpy
+pandas
+torch
+stable-baselines3
+loguru
+#streamlit

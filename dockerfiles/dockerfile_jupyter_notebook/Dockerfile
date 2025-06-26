@@ -1,7 +1,8 @@
-#FROM jupyter/scipy-notebook
+# FROM jupyter/scipy-notebook
 # FROM jupyter/base-notebook
-#FROM jupyter/scipy-notebook:b2562c469cdd
-FROM python:3.13
+# FROM jupyter/scipy-notebook:b2562c469cdd
+FROM jupyter/datascience-notebook
+# FROM python:3.12
 
 USER root
 
@@ -31,7 +32,7 @@ RUN pip install --requirement /tmp/requirements.txt && \
 #    jupyter lab build &&\
     unset NODE_OPTIONS
 
-RUN conda install -c conda-forge ta-lib -y
+#RUN conda install -c conda-forge ta-lib -y
 
 ENV PYTHONPATH "${PYTHONPATH}:/home/project/work/q_pack"
 ENV JUPYTER_ENABLE_LAB "yes"

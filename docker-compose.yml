@@ -2,9 +2,9 @@ version: "3.7"
 services:
 
 
-
-    minio-image:
-        container_name: minio-image
+##############################################################################################################
+    minio:
+        container_name: minio
         build:
             context: ./dockerfiles/dockerfile_minio
         restart: always
@@ -19,9 +19,9 @@ services:
         command: server /minio-image/storage
 
 
-
-    mlflow-image:
-        container_name: "mlflow-image"
+##############################################################################################################
+    mlflow:
+        container_name: "mlflow"
         build:
             context: ./dockerfiles/dockerfile_mlflowserver
         working_dir: "/mlflow-image"
@@ -36,9 +36,9 @@ services:
         command: mlflow server --host 0.0.0.0 --port 5500 --backend-store-uri /mlflow-image/mlruns 
 
 
-
-    jupyter-image:
-        container_name: "jupyter-image"
+##############################################################################################################
+    jupyter:
+        container_name: "jupyter"
         build:
             context: ./dockerfiles/dockerfile_jupyter_notebook
         volumes:
@@ -54,9 +54,9 @@ services:
             - "8888:8888"
 
 
-
-    etl-image:
-        container_name: "etl-image"
+##############################################################################################################
+    etl:
+        container_name: "etl"
         build:
             context: ./dockerfiles/dockerfile_etl
         volumes:
@@ -73,7 +73,7 @@ services:
         command: gunicorn -c gunicorn_config.py -b :8060 app:app
 
             
-
+##############################################################################################################
     redis:
         container_name: redis
         image: redis
@@ -84,11 +84,11 @@ services:
             - 6379:6379
 
 
-
+##############################################################################################################
     postgres_secmaster: 
         image: postgres
         restart: always
-        container_name: "my_postgres"
+        container_name: "my_postgresql"
         ports:
             - 5431:5431                
         environment:
@@ -99,7 +99,7 @@ services:
             - pg_data:/var/lib/postgresql/data
 
 
-
+##############################################################################################################
     pgadmin:
         image : dpage/pgadmin4
         container_name: pgadmin
@@ -116,99 +116,244 @@ services:
             - postgres_secmaster
 
 
-
-    postgres:
-        image: postgres
-        container_name: "airflow_postgres"
+##############################################################################################################
+    postgresql:
+#        image: postgres
+        image: bitnami/postgresql:latest
+        container_name: "airflow-postgresql"
         environment:
             - POSTGRES_USER=airflow
             - POSTGRES_PASSWORD=airflow
-            - POSTGRES_DB=airflow   
+            - POSTGRES_DB=airflow
+            # ALLOW_EMPTY_PASSWORD is recommended only for development.
+            - ALLOW_EMPTY_PASSWORD=yes
         volumes:
             - pg_data_airflow:/var/lib/postgresql/data
 
 
 
-
-    airflow:
-        image: apache/airflow:latest
-        container_name: "airflow"
-        build:
-            context: ./dockerfiles/dockerfile_airflow
+##############################################################################################################
+    airflow-scheduler:
+        image: bitnami/airflow:latest
+        container_name: "airflow-scheduler"
         restart: always
-        depends_on:
-            - postgres
-            - redis
         environment:
-            - LOAD_EX=n
-            - FERNET_KEY=46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho=
-            - EXECUTOR=Celery
-            # - EXECUTOR=Local
-            - AIRFLOW__WEBSERVER__AUTHENTICATE=True
-            - AIRFLOW__WEBSERVER__AUTH_BACKEND=airflow.contrib.auth.backends.password_auth
-        volumes:
-            - ./Storage/airflow/dags:/usr/local/airflow/dags
-            - ./Storage/q_pack:/usr/local/airflow/dags/q_pack
-        ports:
-            - 8080:8080
-        command: webserver
-        healthcheck:
-            test: ["CMD-SHELL", "[ -f /usr/local/airflow/airflow-webserver.pid ]"]
-            interval: 30s
-            timeout: 30s
-            retries: 3
-
-
-
-
-    flower:
-        image: apache/airflow:latest
-        restart: always
+            - AIRFLOW_COMPONENT_TYPE=scheduler
+            - AIRFLOW_DATABASE_NAME=airflow
+            - AIRFLOW_DATABASE_USERNAME=airflow
+            - AIRFLOW_DATABASE_PASSWORD=airflow
+            - AIRFLOW_EXECUTOR=CeleryExecutor
+            - AIRFLOW_APISERVER_HOST=airflow
+            - AIRFLOW_FERNET_KEY=46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho=
+            - AIRFLOW_SECRET_KEY=a25mQ1FHTUh3MnFRSk5KMEIyVVU2YmN0VGRyYTVXY08=
+            - AIRFLOW_APISERVER_HOST=airflow
+            - AIRFLOW_LOAD_EXAMPLES=yes
         depends_on:
+            - postgresql
             - redis
-        environment:
-            - EXECUTOR=Celery
-            - AIRFLOW__WEBSERVER__AUTHENTICATE=True
-            - AIRFLOW__WEBSERVER__AUTH_BACKEND=airflow.contrib.auth.backends.password_auth
-        ports:
-            - "5555:5555"
-        command: flower --basic_auth=user1:password1
-
-
-
-    scheduler:
-        image: apache/airflow:latest
-        restart: always
-        depends_on:
             - airflow
         volumes:
             - ./Storage/airflow/dags:/usr/local/airflow/dags
             - ./Storage/q_pack:/usr/local/airflow/dags/q_pack
-        environment:
-            - LOAD_EX=n
-            - FERNET_KEY=46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho=
-            - EXECUTOR=Celery
-        command: scheduler
 
 
-
-    worker:
-        image: apache/airflow:latest
+##############################################################################################################
+    airflow-triggerer:
+        image: bitnami/airflow:latest
+        container_name: "airflow-triggerer"
         restart: always
+        environment:
+            - AIRFLOW_COMPONENT_TYPE=triggerer
+            - AIRFLOW_DATABASE_NAME=airflow
+            - AIRFLOW_DATABASE_USERNAME=airflow
+            - AIRFLOW_DATABASE_PASSWORD=airflow
+            - AIRFLOW_EXECUTOR=CeleryExecutor
+            - AIRFLOW_APISERVER_HOST=airflow
+            - AIRFLOW_FERNET_KEY=46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho=
+            - AIRFLOW_SECRET_KEY=a25mQ1FHTUh3MnFRSk5KMEIyVVU2YmN0VGRyYTVXY08=
+            - AIRFLOW_APISERVER_HOST=airflow
+            - AIRFLOW_LOAD_EXAMPLES=yes
         depends_on:
-            - scheduler
+            - postgresql
+            - redis
+            - airflow
         volumes:
             - ./Storage/airflow/dags:/usr/local/airflow/dags
             - ./Storage/q_pack:/usr/local/airflow/dags/q_pack
 
+
+##############################################################################################################
+    airflow-dag-processor:
+        image: bitnami/airflow:latest
+        container_name: "airflow-dag-processor"
+        restart: always
         environment:
-            - FERNET_KEY=46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho=
-            - EXECUTOR=Celery
-            - C_FORCE_ROOT=true
-        command: worker
+            - AIRFLOW_COMPONENT_TYPE=dag-processor
+            - AIRFLOW_DATABASE_NAME=airflow
+            - AIRFLOW_DATABASE_USERNAME=airflow
+            - AIRFLOW_DATABASE_PASSWORD=airflow
+            - AIRFLOW_EXECUTOR=CeleryExecutor
+            - AIRFLOW_APISERVER_HOST=airflow
+            - AIRFLOW_FERNET_KEY=46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho=
+            - AIRFLOW_SECRET_KEY=a25mQ1FHTUh3MnFRSk5KMEIyVVU2YmN0VGRyYTVXY08=
+            - AIRFLOW_APISERVER_HOST=airflow
+            - AIRFLOW_LOAD_EXAMPLES=yes
+        depends_on:
+            - postgresql
+            - redis
+            - airflow
+        volumes:
+            - ./Storage/airflow/dags:/usr/local/airflow/dags
+            - ./Storage/q_pack:/usr/local/airflow/dags/q_pack
+
+
+##############################################################################################################
+    airflow-worker:
+        image: bitnami/airflow:latest
+        container_name: "airflow-worker"
+        restart: always
+        environment:
+            - AIRFLOW_COMPONENT_TYPE=worker
+            - AIRFLOW_DATABASE_NAME=airflow
+            - AIRFLOW_DATABASE_USERNAME=airflow
+            - AIRFLOW_DATABASE_PASSWORD=airflow
+            - AIRFLOW_EXECUTOR=CeleryExecutor
+            - AIRFLOW_APISERVER_HOST=airflow
+            - AIRFLOW_FERNET_KEY=46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho=
+            - AIRFLOW_SECRET_KEY=a25mQ1FHTUh3MnFRSk5KMEIyVVU2YmN0VGRyYTVXY08=
+            - AIRFLOW_APISERVER_HOST=airflow
+            - AIRFLOW_LOAD_EXAMPLES=yes
+        depends_on:
+            - postgresql
+            - redis
+            - airflow
+        volumes:
+            - ./Storage/airflow/dags:/usr/local/airflow/dags
+            - ./Storage/q_pack:/usr/local/airflow/dags/q_pack
+
+
+##############################################################################################################
+    airflow:
+        image: bitnami/airflow:latest
+        container_name: "airflow"
+        build:
+            context: ./dockerfiles/dockerfile_dash
+        restart: always
+        environment:
+            - AIRFLOW_DATABASE_NAME=airflow
+            - AIRFLOW_DATABASE_USERNAME=airflow
+            - AIRFLOW_DATABASE_PASSWORD=airflow
+            - AIRFLOW_EXECUTOR=CeleryExecutor
+            - AIRFLOW_FERNET_KEY=46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho=
+            - AIRFLOW_SECRET_KEY=a25mQ1FHTUh3MnFRSk5KMEIyVVU2YmN0VGRyYTVXY08=
+            - AIRFLOW_APISERVER_HOST=airflow
+            - AIRFLOW_PASSWORD=user
+            - AIRFLOW_USERNAME=user
+            - AIRFLOW_EMAIL=user@example.com
+            - AIRFLOW__WEBSERVER__AUTH_BACKEND=airflow.contrib.auth.backends.password_auth
+        ports:
+            - '8080:8080'
+        depends_on:
+            - postgresql
+            - redis
+        volumes:
+            - ./Storage/airflow/dags:/usr/local/airflow/dags
+            - ./Storage/q_pack:/usr/local/airflow/dags/q_pack
+        healthcheck:
+              test: ["CMD", "curl", "--fail", "http://localhost:8080/health"]
+              interval: 30s
+              timeout: 10s
+              retries: 5
+              start_period: 30s
 
 
 
+##############################################################################################################
+#    airflow:
+#        #image: apache/airflow:latest
+#        image: bitnami/airflow:latest
+#        container_name: "airflow"
+#        build:
+#            context: ./dockerfiles/dockerfile_airflow
+#        restart: always
+#        depends_on:
+#            - postgres
+#            - redis
+#        environment:
+#            - LOAD_EX=n
+#            - FERNET_KEY=46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho=
+#            - EXECUTOR=Celery
+#            # - EXECUTOR=Local
+#            - AIRFLOW__WEBSERVER__AUTHENTICATE=True
+#            - AIRFLOW__WEBSERVER__AUTH_BACKEND=airflow.contrib.auth.backends.password_auth
+#        volumes:
+#            - ./Storage/airflow/dags:/usr/local/airflow/dags
+#            - ./Storage/q_pack:/usr/local/airflow/dags/q_pack
+#        ports:
+#            - 8080:8080
+        #command: webserver
+        #command: api-server
+#        healthcheck:
+#              test: ["CMD", "curl", "--fail", "http://localhost:8080/health"]
+#              interval: 30s
+#              timeout: 10s
+#              retries: 5
+#              start_period: 30s
+
+
+
+##############################################################################################################
+#    flower:
+#        #image: apache/airflow:latest
+#        image: bitnami/airflow:latest
+#        restart: always
+#        depends_on:
+#            - redis
+#        environment:
+#            - EXECUTOR=Celery
+#            - AIRFLOW__WEBSERVER__AUTHENTICATE=True
+#            - AIRFLOW__WEBSERVER__AUTH_BACKEND=airflow.contrib.auth.backends.password_auth
+#        ports:
+#            - "5555:5555"
+#        command: flower --basic_auth=user1:password1
+
+
+##############################################################################################################
+#    scheduler:
+#        #image: apache/airflow:latest
+#        image: bitnami/airflow:latest
+#        restart: always
+#        depends_on:
+#            - airflow
+#        volumes:
+#            - ./Storage/airflow/dags:/usr/local/airflow/dags
+#            - ./Storage/q_pack:/usr/local/airflow/dags/q_pack
+#        environment:
+#            - LOAD_EX=n
+#            - FERNET_KEY=46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho=
+#            - EXECUTOR=Celery
+#        command: scheduler
+
+
+##############################################################################################################
+#    worker:
+#        #image: apache/airflow:latest
+#        image: bitnami/airflow:latest
+#        restart: always
+#        depends_on:
+#            - scheduler
+#        volumes:
+#            - ./Storage/airflow/dags:/usr/local/airflow/dags
+#            - ./Storage/q_pack:/usr/local/airflow/dags/q_pack
+
+#        environment:
+#            - FERNET_KEY=46BKJoQYlPPOexq0OhDZnIlNepKFf87WFwLbfzqDDho=
+#            - EXECUTOR=Celery
+#            - C_FORCE_ROOT=true
+#        command: worker
+
+
+##############################################################################################################
     dash:
         container_name: "dash"
         build:
@@ -219,7 +364,7 @@ services:
             - "5001:5001" # app(debug) port
             - "3000:3000" # remote debugger attach port
         depends_on:
-            - postgres
+            - postgresql
         volumes:
             - ./Storage/dash:/app
             - ./Storage/q_pack:/q_pack
@@ -229,7 +374,7 @@ services:
             - FLASK_ENV=development
 
 
-
+##############################################################################################################
     twportainer:
         image: portainer/portainer-ce:latest
         container_name: twportainer
@@ -244,7 +389,7 @@ services:
         restart: always
 
 
-
+##############################################################################################################
     nginx:
         image: nginx
         container_name: "nginx_reverse"
@@ -253,24 +398,24 @@ services:
         ports:
             - 80:80
         depends_on:
-            - "jupyter-image"
+            - "jupyter"
             - "airflow"
-            - "mlflow-image"
+            - "mlflow"
             - "pgadmin"
-            - "minio-image"
+            - "minio"
             - "twportainer"
         links:
-            - "jupyter-image"
+            - "jupyter"
             - "airflow"
-            - "mlflow-image"
+            - "mlflow"
             - "pgadmin"
-            - "minio-image"
+            - "minio"
             - "twportainer"
         restart: always
 
 
 
-
+##############################################################################################################
 volumes:
     pg_data:
         external: false

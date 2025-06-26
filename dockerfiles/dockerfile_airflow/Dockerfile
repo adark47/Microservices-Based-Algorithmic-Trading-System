@@ -1,4 +1,4 @@
-FROM apache/airflow:latest
+FROM bitnami/airflow:latest
 # apache/airflow:latest - the latest released Airflow image with default Python version (3.12 currently)
 # apache/airflow:latest-pythonX.Y - the latest released Airflow image with specific Python version
 # apache/airflow:3.1.0 - the versioned Airflow image with default Python version (3.12 currently)
@@ -15,3 +15,5 @@ ENV MLFLOW_S3_ENDPOINT_URL "http://minio-image:9000"
 ENV AWS_ACCESS_KEY_ID "minio-image"
 ENV AWS_SECRET_ACCESS_KEY "minio-image-pass"
 ENV MLFLOW_TRACKING_URI "http://mlflow-image:5500"
+
+RUN airflow db migrate
